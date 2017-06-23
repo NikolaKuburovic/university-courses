@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow xmlns="http://www.springframework.org/schema/webflow"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.springframework.org/schema/webflow 
+        http://www.springframework.org/schema/webflow/spring-webflow-2.4.xsd">
+    
+    <var name="premiumLoginBean" class="com.it355.metcourses.PremiumLoginBean" />
+    
+    <!--
+        Pocetna stranica premiumlogin od koje krece tok.
+        Stranica se pojavljuje kada korisnik klikne na link "Premium" u meniju.
+    -->
+    <view-state id="displayLoginView" view="/WEB-INF/jsp/premiumlogin.jsp" model="premiumLoginBean">
+        <transition on="performLogin" to="performLoginAction" />
+    </view-state>
+    
+    <!--
+        Tok ide od stranice premiumlogin ka stranicama premiumsuccess i premiumfailure.
+        U zavisnosti od toga da li su uneti tacni ili netacni podaci, korisniku se prikazuje
+        premiumsuccess strana ili premiumfailure strana.
+    -->
+    <action-state id="performLoginAction">
+        <evaluate expression="premiumLoginService.validateUser(premiumLoginBean)" />
+        <transition on="true" to="displaySuccess" />
+        <transition on="false" to="displayError" />
+    </action-state>
+    
+    <view-state id="displaySuccess" view="/WEB-INF/jsp/premiumsuccess.jsp" model="premiumLoginBean"/>
+    <view-state id="displayError" view="/WEB-INF/jsp/premiumfailure.jsp" />
+</flow>

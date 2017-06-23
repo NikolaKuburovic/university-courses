@@ -1,0 +1,91 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       
+       xmlns:flow="http://www.springframework.org/schema/webflow-config"
+       
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd 
+        http://www.springframework.org/schema/aop 
+        http://www.springframework.org/schema/aop/spring-aop.xsd 
+        http://www.springframework.org/schema/webflow-config 
+        http://www.springframework.org/schema/webflow-config/spring-webflow-config-2.4.xsd 
+        http://www.springframework.org/schema/tx 
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+    
+    <context:component-scan base-package="com.it355.metcourses" />
+    
+    <aop:aspectj-autoproxy />
+    
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/" />
+        <property name="suffix" value=".jsp" />    
+    </bean>
+    <!--Kako bi Hibernate mogao da se poveže na bazu podataka
+    potrebno je kreirati sesiju. To radimo u sledećem zrnu-->
+    <bean id="sessionFactory"
+          class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="configLocation" >
+            <!--Dodavanje path-a na kome se nalaze podešavanja za Hibernate -->
+            <value>classpath:hibernate.cfg.xml</value>
+        </property>
+ 
+    </bean>
+    <!--Transakcija se dešava između baze i programa korišćenjem
+    Transaction Managera koji definišemo ovde
+    On koristi sesiju koju smo definisali iznad
+    -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+    <bean id="dataSource"
+      class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver" />
+        <property name="url" value="jdbc:mysql://localhost:3306/metcourses" />
+        <property name="username" value="root" />
+        <property name="password" value="root" />
+    </bean>
+    <bean name="profesorDao" class="com.it355.metcourses.dao.impl.ProfesorDaoImpl">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <bean name="asistentDao" class="com.it355.metcourses.dao.impl.AsistentDaoImpl">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+    <bean name="profesorService" class="com.it355.metcourses.service.impl.ProfesorServiceImpl" />
+    <bean name="asistentService" class="com.it355.metcourses.service.impl.AsistentServiceImpl" />
+    <bean id="korisnikDao" class="com.it355.metcourses.dao.impl.KorisnikDaoImpl"></bean>
+    <bean id="kursDao" class="com.it355.metcourses.dao.impl.KursDaoImpl"></bean>
+    <bean name="korisnikService" class="com.it355.metcourses.service.impl.KorisnikServiceImpl" />
+    <bean name="kursService" class="com.it355.metcourses.service.impl.KursServiceImpl" />
+    <bean id="persistenceExceptionTranslationPostProcessor" 
+          class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>
+    <tx:annotation-driven />
+    <mvc:default-servlet-handler />
+    
+    <bean id="messageSource" 
+          class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <value>/WEB-INF/lang/person</value>
+            </list>
+        </property>
+        <property name="defaultEncoding" value="UTF-8"/>
+    </bean>
+    <bean class="com.it355.metcourses.LogAspect" />   
+    <mvc:resources mapping="/resources/**" location="/resources/" />
+    <mvc:annotation-driven />
+    
+    <import resource="premium-flow-definition.xml"/>
+     
+</beans>
+
